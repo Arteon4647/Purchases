@@ -8,6 +8,6 @@ data class Purchase(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val description: String,
-    val amount: Double,
+    val amount: Float,
     val date: Long
 )

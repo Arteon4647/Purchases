@@ -15,10 +15,10 @@ interface PurchaseDao {
 //    fun updatePurchase()
 
     @Upsert
-    suspend fun upsertPurchase()
+    suspend fun upsertPurchase(purchase: Purchase)
 
     @Delete
-    suspend fun deletePurchase()
+    suspend fun deletePurchase(purchase: Purchase)
 
     @Query("SELECT * FROM Purchase ORDER BY date ASC")
     fun getPurchasesOrderedByDateAsc(): Flow<List<Purchase>>
