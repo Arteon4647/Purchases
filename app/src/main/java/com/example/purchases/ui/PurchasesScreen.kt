@@ -2,7 +2,6 @@ package com.example.purchases.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,13 +29,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.purchases.PurchaseState
+import com.example.purchases.PurchasesEvent
 import com.example.purchases.R
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Composable
-fun PurchasesScreen() {
+fun PurchasesScreen(
+    state: PurchaseState,
+    navController: NavController,
+    onEvent: (PurchasesEvent) -> Unit
+) {
     Scaffold(
         modifier = Modifier
             .statusBarsPadding()
@@ -57,7 +64,9 @@ fun PurchasesScreen() {
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
-                IconButton(onClick = {}) {
+                IconButton(onClick = {
+                    onEvent(PurchasesEvent.SortPurchases)
+                }) {
                     Icon(
                         painterResource(R.drawable.outline_sort_24),
                         contentDescription = "Sort",
@@ -70,7 +79,11 @@ fun PurchasesScreen() {
         floatingActionButton = {
             FloatingActionButton(
                 containerColor = MaterialTheme.colorScheme.primary,
-                onClick = {}) {
+                onClick = {
+                    state.description.value = ""
+                    state.amount.value = 0.0f
+                    navController.navigate("AddPurchaseScreen")
+                }) {
                 Icon(
                     modifier = Modifier.size(35.dp),
                     imageVector = Icons.Rounded.Add,
@@ -87,8 +100,8 @@ fun PurchasesScreen() {
                 .padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(5) {
-                PurchaseItem()
+            items(state.purchases.size) {index ->
+                PurchaseItem(state = state, index = index, onEvent = onEvent)
             }
         }
 
@@ -96,7 +109,13 @@ fun PurchasesScreen() {
 }
 
 @Composable
-fun PurchaseItem() {
+fun PurchaseItem(
+    state: PurchaseState,
+    index: Int,
+    onEvent: (PurchasesEvent) -> Unit
+) {
+    val date = state.purchases[index].date
+    val ourFormat = SimpleDateFormat("dd/MMM/yyyy HH:mm", Locale.getDefault())
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -107,25 +126,27 @@ fun PurchaseItem() {
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                "12:00 13 Feb 2026",
+                text = ourFormat.format(date),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Normal,
                 color = MaterialTheme.colorScheme.onSecondaryContainer
             )
             Text(
-                "Car",
+                state.purchases[index].description,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSecondaryContainer
             )
         }
         Text(
-            "9999.9",
+            state.purchases[index].amount.toString(),
             fontSize = 18.sp,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSecondaryContainer
         )
-        IconButton(onClick = {}) {
+        IconButton(onClick = {
+            onEvent(PurchasesEvent.DeletePurchase(state.purchases[index]))
+        }) {
             Icon(
                 modifier = Modifier.size(35.dp),
                 imageVector = Icons.Rounded.Delete,
@@ -134,10 +155,4 @@ fun PurchaseItem() {
             )
         }
     }
-}
-
-@Composable
-@Preview(showSystemUi = true)
-fun PurchasesScreenPreview() {
-    PurchasesScreen()
 }
